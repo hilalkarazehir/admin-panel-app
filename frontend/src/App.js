@@ -1,19 +1,24 @@
 import { useState } from "react"
+import { BrowserRouter, Routes, Route, useNavigate} from "react-router-dom";
+import "./App.css";
 
-function App() {
+function LoginEkrani() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
+  const navigate = useNavigate()
+
   console.log("Username:",username)
   console.log("Password:",password)
-  
+
   const handleLogin = () => {
     if (username === '') {
       alert("kullanıcı adı boş bırakılamaz")
     } else if (password === '') {
       alert("şifre boş bırakılamaz")
     } else {
-      alert("giriş başarılı")
+      localStorage.setItem("isLoggedIn", "true");
+        navigate("/dashboard");;
     }
   }
 
@@ -42,6 +47,40 @@ function App() {
       </button>
     </div>
   )
+}
+function Dashboard() {
+   const navigate = useNavigate()
+   const handleLogout = () => {
+   localStorage.removeItem("isLoggedIn");
+   navigate("/");
+} 
+  return(
+
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>Giriş başarılı! Hoş geldiniz </p>
+
+<button onClick={handleLogout}>
+  Çıkış Yap
+</button>
+<hr />
+<div >
+        <button className="btn-style" onClick={() => alert("Loglar listelenecek (Backend API bekleniyor)")}>📜 Loglar</button>
+        <button className="btn-style" onClick={() => alert("Roller listelenecek (Backend API bekleniyor)")}>📜 Roller</button>
+        <button className="btn-style" onClick={() => alert("Kullanıcılar listelenecek (Backend API bekleniyor)")}>📜 Kullanıcılar</button>
+   </ div>
+    </div>
+  )
+}
+function App(){
+return (
+  <BrowserRouter>
+       <Routes>
+  <Route path="/" element={<LoginEkrani />} />
+  <Route path="/dashboard" element={<Dashboard />} />
+</Routes>
+       </BrowserRouter>
+)
 }
 
 export default App
