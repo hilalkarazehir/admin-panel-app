@@ -72,6 +72,15 @@ function Dashboard() {
     </div>
   )
 }
+
+fetch('https://ornekuygulama.com')
+  .then(response => response.json())
+  .then(veri => {
+    console.log(veri); // Gelen veriyi konsola yazdır
+    // Veriyi arayüzde gösterme işlemleri burada yapılır
+  })
+  .catch(hata => console.error('Bağlantı hatası:', hata));
+
 function App(){
 return (
   <BrowserRouter>
