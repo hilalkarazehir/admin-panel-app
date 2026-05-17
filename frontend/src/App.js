@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState , useEffect} from "react"
 import { BrowserRouter, Routes, Route, useNavigate} from "react-router-dom";
 import "./App.css";
 
@@ -8,8 +8,8 @@ function LoginEkrani() {
 
   const navigate = useNavigate()
 
-  console.log("Username:",username)
-  console.log("Password:",password)
+  //console.log("Username:",username)
+  //console.log("Password:",password)
 
  const handleLogin = async () => {
 
@@ -76,7 +76,16 @@ function LoginEkrani() {
 }
 function Dashboard() {
    const navigate = useNavigate()
+
+    useEffect(() => {
+     const loggedIn = localStorage.getItem("isLoggedIn");
+     if (!loggedIn) {
+       navigate("/"); // Tarayıcıda hafıza kontrolü boşsa direkt login ekranına fırlatır
+     }
+   }, [navigate]);
+   
    const handleLogout = () => {
+
    localStorage.removeItem("isLoggedIn");
    navigate("/");
 } 
