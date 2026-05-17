@@ -11,17 +11,43 @@ function LoginEkrani() {
   console.log("Username:",username)
   console.log("Password:",password)
 
-  const handleLogin = () => {
-    if (username === '') {
-      alert("kullanıcı adı boş bırakılamaz")
-    } else if (password === '') {
-      alert("şifre boş bırakılamaz")
-    } else {
-      localStorage.setItem("isLoggedIn", "true");
-        navigate("/dashboard");;
-    }
+ const handleLogin = async () => {
+
+  if (username === '') {
+    alert("kullanıcı adı boş bırakılamaz")
+    return
   }
 
+  if (password === '') {
+    alert("şifre boş bırakılamaz")
+    return
+  }
+
+  console.log("fetch öncesi")
+
+  const response = await fetch("http://localhost:5000/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username,
+      password
+    })
+  })
+
+  console.log("fetch sonrası")
+
+  const data = await response.json()
+  console.log(data)
+
+  if (data.success) {
+    localStorage.setItem("isLoggedIn", "true")
+    navigate("/dashboard")
+  } else {
+    alert(data.message)
+  }
+}
   return (
     <div>
       <h1>Admin Paneli</h1>
@@ -60,7 +86,7 @@ function Dashboard() {
       <h1>Admin Dashboard</h1>
       <p>Giriş başarılı! Hoş geldiniz </p>
 
-<button onClick={handleLogout}>
+<button type="button" onClick={handleLogout}>
   Çıkış Yap
 </button>
 <hr />
@@ -72,14 +98,6 @@ function Dashboard() {
     </div>
   )
 }
-
-fetch('https://ornekuygulama.com')
-  .then(response => response.json())
-  .then(veri => {
-    console.log(veri); // Gelen veriyi konsola yazdır
-    // Veriyi arayüzde gösterme işlemleri burada yapılır
-  })
-  .catch(hata => console.error('Bağlantı hatası:', hata));
 
 function App(){
 return (

@@ -1,59 +1,59 @@
-const express = require('express');
-const cors = require('cors'); // Frontend ile backend arasındaki port farkını çözer
-const { Client } = require('pg'); // Veritabanına bağlanma aracını ekledik
 
-const app = express();
-const PORT = 5000; // React ile çakışmaması için portu 5000 yaptık
+const express = require("express")
+const cors = require("cors")
+const pool = require("./db")
 
-// Middleware (Veri işleme ve güvenlik)
-app.use(cors());
-app.use(express.json()); // JSON formatındaki istekleri okumayı sağlar
+const app = express()
+console.log("🔥 BACKEND DOSYASI AKTİF")
 
-// 1. VERİTABANI BAĞLANTI AYARI
-const db = new Client({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'smartspirit_db',
-  password: 'hilal1234', 
-  port: 5432,
-});
-db.connect()
-  .then(() => console.log("PostgreSQL veritabanına başarıyla bağlandık!"))
-  .catch(err => console.error("Veritabanı bağlantı hatası:", err));
+app.use(cors())
+app.use(express.json())
 
+app.use((req, res, next) => {
+    console.log("➡️ REQUEST GELDİ:", req.method, req.url)
+    next()
+})
 
-// 2. API UÇ NOKTASI (Frontend'in giriş yapmak için bağlanacağı yer)
-app.post('/api/login', async (req, res) => {
-    // Frontend formundan gelen kullanıcı adı ve şifreyi alıyoruz
-    const { username, password } = req.body;
+app.get("/", (req, res) => {
+    res.send("Backend çalışıyor")
+})
+
+app.post("/login", async (req, res) => {
+
+    console.log("LOGIN GELDİ")
+    console.log(req.body)
+
+    const { username, password } = req.body
 
     try {
-        // Veritabanına soruyoruz: "Users tablosunda bu isim ve şifrede biri var mı?"
-        // Yanına da roller tablosundan o kişinin rolünün adını (Admin mi, NormalUser mı) çekiyoruz
-        const sonuc = await db.query(
-          'SELECT u.*, r.name as role_name FROM "Users" u JOIN "Roles" r ON u.role_id = r.id WHERE u.username = $1 AND u.password = $2',
-          [username, password]
-        );
+        const result = await pool.query(
+            "SELECT * FROM users WHERE username = $1 AND password = $2",
+            [username, password]
+        )
 
-        if (sonuc.rows.length > 0) {
-            // Kullanıcı veritabanında bulunduysa (Giriş Başarılı)
-            const user = sonuc.rows[0];
-            res.json({ 
-                success: true, 
-                message: "Giriş başarılı!", 
-                user: { username: user.username, role: user.role_name } 
-            });
+        if (result.rows.length > 0) {
+            console.log("✔ DOĞRU GİRİŞ")
+            res.json({
+                success: true,
+                message: "Giriş başarılı"
+            })
         } else {
-            // Kullanıcı adı veya şifre yanlışsa (Giriş Başarısız)
-            res.json({ success: false, message: "Kullanıcı adı veya şifre hatalı!" });
+            console.log("❌ HATALI GİRİŞ")
+            res.json({
+                success: false,
+                message: "Hatalı giriş"
+            })
         }
-    } catch (hata) {
-        console.error(hata);
-        res.status(500).json({ success: false, message: "Sunucu hatası oluştu." });
-    }
-});
 
-// Sunucuyu Başlatma
-app.listen(PORT, () => {
-    console.log(`Sunucu http://localhost:${PORT} adresinde çalışıyor.`);
-});
+    } catch (err) {
+        console.error("DB HATA:", err)
+        res.status(500).json({
+            success: false,
+            message: "Server error"
+        })
+    }
+})
+
+app.listen(5000, () => {
+    console.log("Server çalıştı")
+})
